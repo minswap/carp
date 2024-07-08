@@ -1,9 +1,4 @@
 version: "3.5"
-# networks:
-  # carp_network:
-  #   ipam:
-  #     config:
-  #       - subnet: 172.20.0.0/24
 
 services:
   postgres:
@@ -11,51 +6,16 @@ services:
     image: postgres:${POSTGRES_VERSION:-13.6} # 14.2, 13.6, 12.10, 11.15 # replace with correct major version on existing installations, no alpine
     shm_size: 8gb
     environment:
-      # - POSTGRES_LOGGING=true
       - POSTGRES_DB=${POSTGRES_DB:-carp_mainnet}
       - POSTGRES_USER=${PGUSER:?Export PG username}
       - POSTGRES_PASSWORD=${PGPASSWORD:?Export PG password}
-      # - PGPASSFILE=/run/secrets/.pgpass
-    # secrets:
-    #   - source: pgpass
-    #     target: .pgpass
     volumes:
-      - ./${NETWORK:-mainnet}/postgres-data:/var/lib/postgresql/data
-
-    # logging:
-    #   driver: "json-file"
-    #   options:
-    #     max-size: "200k"
-    #     max-file: "10"
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_EXPOSED_PORT:-5432}:5432"
-    network_mode: host
-    # networks:
-    #   carp_network:
-    #     ipv4_address: 172.20.0.3
-
-  # cardano-node:
-  #   restart: unless-stopped
-  #   image: inputoutput/cardano-node:${CARDANO_NODE_VERSION:-8.1.2}
-  #   environment:
-  #     - NETWORK=${NETWORK:-mainnet}
-  #   volumes:
-  #     - ./${NETWORK:-mainnet}/node-db:/data/db
-  #     - ./${NETWORK:-mainnet}/node-ipc:/ipc
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "200k"
-  #       max-file: "10"
-  #   ports:
-  #     - "${CARDANO_NODE_EXPOSED_PORT:-3001}:3001"
-  #   networks:
-  #     carp_network:
-  #       ipv4_address: 172.20.0.4
 
   carp:
     restart: unless-stopped
-
     build:
       context: ../
       dockerfile: Dockerfile
@@ -65,17 +25,12 @@ services:
     image: carp:${CARP_VERSION}
     environment:
       - NETWORK=${NETWORK:-mainnet}
-      # - PGPASSFILE=/run/secrets/.pgpass
       - DATABASE_URL=${DATABASE_URL}
       - RUST_BACKTRACE=full
-    # secrets:
-    #   - source: pgpass
-    #     target: .pgpass
     volumes:
       - type: bind
         source: ${CARDANO_NODE_SOCKET_PATH:-/root/cardano-node/node.socket}
         target: /node.socket
-      # - ./${NETWORK:-mainnet}/node-ipc:/app/node-ipc:rw
       - ./config/indexer/:/app/config/indexer:r
     entrypoint:
       - /bin/bash
@@ -85,16 +40,6 @@ services:
         /app/carp --config-path /app/config/indexer/${CONFIG_FILE:-oura_docker.yml} ;
     depends_on:
       - postgres
-      # - cardano-node
-    # logging:
-    #   driver: "json-file"
-    #   options:
-    #     max-size: "1m"
-    #     max-file: "10"
-    network_mode: host
-    # networks:
-    #   carp_network:
-    #     ipv4_address: 172.20.0.5
 
   # carp_web:
   #   restart: unless-stopped
@@ -109,36 +54,5 @@ services:
   #     carp_network:
   #       ipv4_address: 172.20.0.6
 
-  # to run stack with backup, please uncomment this
-  # currently supports only AWS s3. GCP and Azure TODO
-  # postgres_backup:
-  #   build:
-  #     context: ./backuper
-  #     dockerfile: Dockerfile
-  #   restart: unless-stopped
-  #   environment:
-  #   - NETWORK=${NETWORK:-mainnet}
-  #   - CARDANO_NODE_SOCKET_PATH=/app/node-ipc/node.socket
-  #   - POSTGRES_DB=${POSTGRES_DB:-carp_mainnet}
-  #   - POSTGRES_USER=${PGUSER:?Export PG username}
-  #   - POSTGRES_PASSWORD=${PGPASSWORD:?Export PG password}
-  #   - PGPASSFILE=/run/secrets/.pgpass
-  #   - S3_BUCKET=${S3_BUCKET:?Please set me}
-  #   - S3_FOLDER=${S3_FOLDER:?Recommend as hostname}
-  #   - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?Please set me}
-  #   - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?Please set me}
-  #   - CARP_VERSION=${CARP_VERSION}
-  #   volumes:
-  #   - ./${NETWORK:-mainnet}/node-ipc:/app/node-ipc:rw
-  #   secrets:
-  #   - source: pgpass
-  #     target: .pgpass
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "200k"
-  #       max-file: "10"
-
-# secrets:
-#   pgpass:
-#     file: ./config/secrets/${NETWORK:-mainnet}/.pgpass
+volumes:
+  postgres-data: {}
