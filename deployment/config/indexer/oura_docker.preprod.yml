@@ -1,6 +1,6 @@
 source:
   type: oura
-  socket: "/app/node-ipc/node.socket" # or url
+  socket: "/node.socket" # or url
   bearer: Unix # or Tcp
 
 sink:
