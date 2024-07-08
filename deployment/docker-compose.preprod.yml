@@ -68,9 +68,9 @@ services:
       # - PGPASSFILE=/run/secrets/.pgpass
       - DATABASE_URL=${DATABASE_URL}
       - RUST_BACKTRACE=full
-    secrets:
-      - source: pgpass
-        target: .pgpass
+    # secrets:
+    #   - source: pgpass
+    #     target: .pgpass
     volumes:
       - type: bind
         source: ${CARDANO_NODE_SOCKET_PATH:-/root/cardano-node/node.socket}
