@@ -29,7 +29,7 @@ services:
     #     max-file: "10"
     ports:
       - "${POSTGRES_EXPOSED_PORT:-5432}:5432"
-    network: host
+    network_mode: host
     # networks:
     #   carp_network:
     #     ipv4_address: 172.20.0.3
@@ -91,7 +91,7 @@ services:
     #   options:
     #     max-size: "1m"
     #     max-file: "10"
-    network: host
+    network_mode: host
     # networks:
     #   carp_network:
     #     ipv4_address: 172.20.0.5
