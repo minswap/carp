@@ -15,10 +15,10 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-carp_mainnet}
       - POSTGRES_USER=${PGUSER:?Export PG username}
       - POSTGRES_PASSWORD=${PGPASSWORD:?Export PG password}
-      - PGPASSFILE=/run/secrets/.pgpass
-    secrets:
-      - source: pgpass
-        target: .pgpass
+      # - PGPASSFILE=/run/secrets/.pgpass
+    # secrets:
+    #   - source: pgpass
+    #     target: .pgpass
     volumes:
       - ./${NETWORK:-mainnet}/postgres-data:/var/lib/postgresql/data
 
@@ -65,7 +65,7 @@ services:
     image: carp:${CARP_VERSION}
     environment:
       - NETWORK=${NETWORK:-mainnet}
-      - PGPASSFILE=/run/secrets/.pgpass
+      # - PGPASSFILE=/run/secrets/.pgpass
       - DATABASE_URL=${DATABASE_URL}
       - RUST_BACKTRACE=full
     secrets:
@@ -139,6 +139,6 @@ services:
   #       max-size: "200k"
   #       max-file: "10"
 
-secrets:
-  pgpass:
-    file: ./config/secrets/${NETWORK:-mainnet}/.pgpass
+# secrets:
+#   pgpass:
+#     file: ./config/secrets/${NETWORK:-mainnet}/.pgpass
